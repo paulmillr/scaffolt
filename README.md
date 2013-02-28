@@ -2,6 +2,8 @@
 
 Dead-simple scaffolder. Consumes JSON generators with Handlebars support.
 
+Example of generators: [paulmillr/brunch-with-chaplin](https://github.com/paulmillr/brunch-with-chaplin/tree/master/generators).
+
 Install with npm: `npm install -g scaffolt`.
 
 ## Usage
