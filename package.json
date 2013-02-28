@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Dead-simple JSON-based scaffolder.",
   "main": "index.js",
+  "bin": {
+    "scaffolt": "./scaffolt"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
