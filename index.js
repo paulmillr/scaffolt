@@ -10,10 +10,25 @@ var logger = require('loggy');
 
 exports.formatTemplate = function(template, templateData) {
   var compiled, key;
-  key = '__BRUNCH_TEMPLATE_FORMATTER';
+  key = '__TEMPLATE_FORMATTER';
   compiled = Handlebars.compile(template.replace(/\\\{/, key));
   return compiled(templateData).toString().replace(key, '\\');
 };
+
+Handlebars.registerHelper('camelize', (function() {
+  var camelize;
+  camelize = function(string) {
+    var regexp, rest;
+    regexp = /[-_]([a-z])/g;
+    rest = string.replace(regexp, function(match, char) {
+      return char.toUpperCase();
+    });
+    return rest[0].toUpperCase() + rest.slice(1);
+  };
+  return function(options) {
+    return new Handlebars.SafeString(camelize(options.fn(this)));
+  };
+})());
 
 exports.generateFile = function(path, data, callback) {
   fs.exists(path, function(exists) {
@@ -30,14 +45,11 @@ exports.generateFile = function(path, data, callback) {
         fs.writeFile(path, data, callback);
       };
       fs.exists(parentDir, function(exists) {
-        if (exists) {
-          return write();
-        }
+        if (exists) return write();
         logger.info("init " + parentDir);
+        // chmod 755.
         mkdirp(parentDir, 0x1ed, function(error) {
-          if (error != null) {
-            return logger.error;
-          }
+          if (error != null) return logger.error(error);
           write();
         });
       });
@@ -123,6 +135,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
       to: replaceSlashes(exports.formatTemplate(object.to, templateData))
     };
   });
+
   json.dependencies = json.dependencies.map(function(object) {
     return {
       name: object.name,
