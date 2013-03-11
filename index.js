@@ -9,18 +9,15 @@ var sysPath = require('path');
 var logger = require('loggy');
 
 exports.formatTemplate = function(template, templateData) {
-  var compiled, key;
-  key = '__TEMPLATE_FORMATTER';
-  compiled = Handlebars.compile(template.replace(/\\\{/, key));
+  var key = '__TEMPLATE_FORMATTER';
+  var compiled = Handlebars.compile(template.replace(/\\\{/, key));
   return compiled(templateData).toString().replace(key, '\\');
 };
 
 Handlebars.registerHelper('camelize', (function() {
-  var camelize;
-  camelize = function(string) {
-    var regexp, rest;
-    regexp = /[-_]([a-z])/g;
-    rest = string.replace(regexp, function(match, char) {
+  var camelize = function(string) {
+    var regexp = /[-_]([a-z])/g;
+    var rest = string.replace(regexp, function(match, char) {
       return char.toUpperCase();
     });
     return rest[0].toUpperCase() + rest.slice(1);
@@ -32,15 +29,14 @@ Handlebars.registerHelper('camelize', (function() {
 
 exports.generateFile = function(path, data, callback) {
   fs.exists(path, function(exists) {
-    var parentDir, write;
     if (exists) {
       logger.info("skipping " + path + " (already exists)");
       if (callback != null) {
         return callback();
       }
     } else {
-      parentDir = sysPath.dirname(path);
-      write = function() {
+      var parentDir = sysPath.dirname(path);
+      var write = function() {
         logger.info("create " + path);
         fs.writeFile(path, data, callback);
       };
@@ -109,7 +105,6 @@ exports.isDirectory = function(generatorsPath) {
 
 exports.readGeneratorConfig = function(generatorsPath) {
   return function(name, callback) {
-    var json, path;
     var path = sysPath.resolve(sysPath.join(generatorsPath, name, 'generator.json'));
     var json = require(path);
     json.name = name;
