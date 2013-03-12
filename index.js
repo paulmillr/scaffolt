@@ -164,7 +164,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
     async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
 
       // Read all generator configs.
-      async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
+      async.forEach(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         if (error != null) throw new Error(error);
         var generators = directories.map(function(directory, index) {
           var path;
