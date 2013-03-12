@@ -174,8 +174,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
       async.forEach(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         if (error != null) throw new Error(error);
         var generators = directories.map(function(directory, index) {
-          var path;
-          path = sysPath.join(generatorsPath, directory);
+          var path = sysPath.join(generatorsPath, directory);
           return exports.formatGeneratorConfig(path, configs[index], templateData);
         });
 
