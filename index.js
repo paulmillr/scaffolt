@@ -29,7 +29,7 @@ Handlebars.registerHelper('camelize', (function() {
 
 exports.generateFile = function(path, data, writeMethod, callback) {
   fs.exists(path, function(exists) {
-    if (exists && writeMethod !== 'overwrite') {
+    if (exists && writeMethod !== 'overwrite' && writeMethod !== 'append') {
       logger.info("skipping " + path + " (already exists)");
       if (callback != null) {
         return callback();
@@ -37,7 +37,7 @@ exports.generateFile = function(path, data, writeMethod, callback) {
     } else {
       var parentDir = sysPath.dirname(path);
       var write = function() {
-        if (writeMethod === 'overwrite') {
+        if (writeMethod === 'create' || writeMethod === 'overwrite') {
           logger.info("create " + path);
           fs.writeFile(path, data, callback);
         } else if (writeMethod === 'append') {
@@ -131,7 +131,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
 
   json.files = json.files.map(function(object) {
     return {
-      writeMethod: object.writeMethod || 'overwrite',
+      writeMethod: object.writeMethod || 'create',
       from: join(replaceSlashes(object.from)),
       to: replaceSlashes(exports.formatTemplate(object.to, templateData))
     };
@@ -139,7 +139,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
 
   json.dependencies = json.dependencies.map(function(object) {
     return {
-      writeMethod: object.writeMethod || 'overwrite',
+      writeMethod: object.writeMethod || 'create',
       name: object.name,
       params: exports.formatTemplate(object.params, templateData)
     };
@@ -171,7 +171,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
     async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
 
       // Read all generator configs.
-      async.forEach(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
+      async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         if (error != null) throw new Error(error);
         var generators = directories.map(function(directory, index) {
           var path = sysPath.join(generatorsPath, directory);
