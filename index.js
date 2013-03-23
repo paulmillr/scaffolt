@@ -69,11 +69,24 @@ exports.destroyFile = function(path, callback) {
   });
 };
 
+exports.amendFile = function(path, contents, callback) {
+  fs.readFile(path, 'utf8', function(error, existingContents) {
+    fs.writeFile(path, existingContents.replace(contents, ''), function(error) {
+      if (error != null) {
+        callback(error);
+        return logger.error("" + error);
+      }
+      logger.info("editing contents of " + path);
+      callback();
+    });
+  });
+};
+
 exports.scaffoldFile = function(revert, from, to, method, templateData, parentPath, callback) {
   if (parentPath) {
     to = sysPath.join(parentPath, sysPath.basename(to));
   }
-  if (revert) {
+  if (revert && method !== 'append') {
     exports.destroyFile(to, callback);
   } else {
     fs.readFile(from, 'utf8', function(error, contents) {
@@ -84,7 +97,11 @@ exports.scaffoldFile = function(revert, from, to, method, templateData, parentPa
           return contents;
         }
       })();
-      exports.generateFile(to, formatted, method, callback);
+      if (revert && method === 'append') {
+        exports.amendFile(to, formatted, callback);
+      } else {
+        exports.generateFile(to, formatted, method, callback);
+      }
     });
   }
 };
