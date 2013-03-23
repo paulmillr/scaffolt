@@ -27,9 +27,9 @@ Handlebars.registerHelper('camelize', (function() {
   };
 })());
 
-exports.generateFile = function(path, data, callback) {
+exports.generateFile = function(path, data, method, callback) {
   fs.exists(path, function(exists) {
-    if (exists) {
+    if (exists && method !== 'overwrite' && method !== 'append') {
       logger.info("skipping " + path + " (already exists)");
       if (callback != null) {
         return callback();
@@ -37,8 +37,13 @@ exports.generateFile = function(path, data, callback) {
     } else {
       var parentDir = sysPath.dirname(path);
       var write = function() {
-        logger.info("create " + path);
-        fs.writeFile(path, data, callback);
+        if (method === 'create' || method === 'overwrite') {
+          logger.info("create " + path);
+          fs.writeFile(path, data, callback);
+        } else if (method === 'append') {
+          logger.info("appending to " + path);
+          fs.appendFile(path, data, callback);
+        }
       };
       fs.exists(parentDir, function(exists) {
         if (exists) return write();
@@ -64,7 +69,7 @@ exports.destroyFile = function(path, callback) {
   });
 };
 
-exports.scaffoldFile = function(revert, from, to, templateData, parentPath, callback) {
+exports.scaffoldFile = function(revert, from, to, method, templateData, parentPath, callback) {
   if (parentPath) {
     to = sysPath.join(parentPath, sysPath.basename(to));
   }
@@ -79,7 +84,7 @@ exports.scaffoldFile = function(revert, from, to, templateData, parentPath, call
           return contents;
         }
       })();
-      exports.generateFile(to, formatted, callback);
+      exports.generateFile(to, formatted, method, callback);
     });
   }
 };
@@ -88,7 +93,7 @@ exports.scaffoldFiles = function(revert, templateData, parentPath) {
   return function(generator, callback) {
     async.forEach(generator.files, function(args, next) {
       exports.scaffoldFile(
-        revert, args.from, args.to, templateData, parentPath, next
+        revert, args.from, args.to, args.method, templateData, parentPath, next
       );
     }, callback);
   };
@@ -126,6 +131,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
 
   json.files = json.files.map(function(object) {
     return {
+      method: object.method || 'create',
       from: join(replaceSlashes(object.from)),
       to: replaceSlashes(exports.formatTemplate(object.to, templateData))
     };
@@ -133,6 +139,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
 
   json.dependencies = json.dependencies.map(function(object) {
     return {
+      method: object.method || 'create',
       name: object.name,
       params: exports.formatTemplate(object.params, templateData)
     };
@@ -167,8 +174,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
       async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         if (error != null) throw new Error(error);
         var generators = directories.map(function(directory, index) {
-          var path;
-          path = sysPath.join(generatorsPath, directory);
+          var path = sysPath.join(generatorsPath, directory);
           return exports.formatGeneratorConfig(path, configs[index], templateData);
         });
 
