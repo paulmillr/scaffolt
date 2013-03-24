@@ -28,6 +28,30 @@ scaffolt model cart --revert
 scaffolt controller header --path controllers/regions/header.coffee
 ```
 
+Generator JSON example:
+
+```json
+{
+  "files": [
+    {
+      "from": "controller.coffee.hbs",
+      "to": "app/controllers/{{name}}-controller.coffee"
+    },
+    {
+      "from": "route.coffee.hbs",
+      "to": "app/routes.coffee",
+      "method": "append"
+    }
+  ],
+  "dependencies": [
+    {"name": "model", "params": "{{name}}"},
+    {"name": "view", "params": "{{name}}-item"},
+    {"name": "style", "params": "{{pluralName}}"},
+    {"name": "template", "params": "{{pluralName}}"}
+  ]
+}
+```
+
 You can use it programmatically too, from node.js:
 
 ```javascript
