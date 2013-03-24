@@ -2,8 +2,6 @@
 
 Dead-simple scaffolder. Consumes JSON generators with Handlebars support.
 
-Example of generators: [paulmillr/brunch-with-chaplin](https://github.com/paulmillr/brunch-with-chaplin/tree/master/generators).
-
 Install with npm: `npm install -g scaffolt`.
 
 ## Usage
@@ -28,7 +26,7 @@ scaffolt model cart --revert
 scaffolt controller header --path controllers/regions/header.coffee
 ```
 
-Generator JSON example:
+Generator JSON example (more examples: [paulmillr/brunch-with-chaplin](https://github.com/paulmillr/brunch-with-chaplin/tree/master/generators)):
 
 ```json
 {
