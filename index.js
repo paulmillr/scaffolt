@@ -206,6 +206,60 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
   });
 };
 
+exports.listGenerators = function( generatorsPath, callback ) {
+  fs.readdir(generatorsPath, function(error, files) {
+    if (error != null) throw new Error(error);
+
+    // Get directories from generators directory.
+    async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
+      console.log("List of available generators in " + generatorsPath);
+
+      directories.map(function(directory, index) {
+        console.log(" * " + directory);
+      });
+    });
+  });
+}
+
+exports.helpGenerator = function( generatorsPath, type, templateData ) {
+  fs.readdir(generatorsPath, function(error, files) {
+    if (error != null) throw new Error(error);
+
+    // Get directories from generators directory.
+    async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
+
+      // Read all generator configs.
+      async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
+        if (error != null) throw new Error(error);
+        var generators = directories.map(function(directory, index) {
+          var path = sysPath.join(generatorsPath, directory);
+          return exports.formatGeneratorConfig(path, configs[index], templateData);
+        });
+
+        // Calculate dependency trees
+        var tree = exports.getDependencyTree(generators, type);
+        tree.reverse();
+        tree.map(function(generator, index) {
+          if (index == 0) {
+            console.log("Documentation for '" + type + "' generator:");
+            console.log(" 'scaffolt " + type + " name'");
+          }
+          else {
+            console.log(" * " + generator.name);
+          }
+          async.forEach(generator.files, function(args) {
+            console.log("   will " + args.method + " " + args.to);
+          });
+          if (index == 0 && tree.length > 1) {
+            console.log("");
+            console.log("Dependencies:");
+          }
+        });
+      });
+    });
+  });
+}
+
 var scaffolt = module.exports = function(type, name, options, callback) {
   // Set some default params.
   if (options == null) options = {};
@@ -229,3 +283,37 @@ var scaffolt = module.exports = function(type, name, options, callback) {
     callback();
   });
 };
+
+
+scaffolt.list = function( options, callback )
+{
+  // Set some default params
+  if (options == null) options = {};  
+  if (callback == null) callback = function() {};
+
+  var generatorsPath = options.generatorsPath;
+
+  if (generatorsPath == null) generatorsPath = 'generators';
+
+  exports.listGenerators(generatorsPath, function(error) {
+    if (error != null) {
+      logger.error(error);
+      return callback(error);
+    }
+    callback();
+  });
+}
+
+scaffolt.help = function( type, options )
+{
+  // Set some default params
+  if (options == null) options = {};  
+
+  var generatorsPath = options.generatorsPath;
+
+  if (generatorsPath == null) generatorsPath = 'generators';
+  var templateData = {name: "name", pluralName: "names"};
+
+  exports.helpGenerator(generatorsPath, type, templateData);
+}
+

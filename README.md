@@ -16,6 +16,8 @@ Options:
   -p, --path [path]        path to directory to which recipe will be copied
   -r, --revert             should scaffolt revert changes done by previous scaffolding?
   -g, --generators [path]  path to directory which contains generators specifications [./generators]
+  -l, --list               list availables generators
+  -d, --doc [type]         display generator documentation
 ```
 
 Examples:
@@ -24,6 +26,8 @@ Examples:
 scaffolt view user
 scaffolt model cart --revert
 scaffolt controller header --path controllers/regions/header.coffee
+scaffolt --list
+scaffolt collection --doc
 ```
 
 Generator JSON example (more examples: [paulmillr/brunch-with-chaplin](https://github.com/paulmillr/brunch-with-chaplin/tree/master/generators)):
