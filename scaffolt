@@ -9,7 +9,9 @@ program
   .usage('<type> <name> [options]')
   .option('-p, --path [path]', 'path to directory to which recipe will be copied')
   .option('-r, --revert', 'should scaffolt revert changes done by previous scaffolding?')
-  .option('-g, --generators [path]', 'path to directory which contains generators specifications [./generators]');
+  .option('-g, --generators [path]', 'path to directory which contains generators specifications [./generators]')
+  .option('-l, --list', 'list availables generators')
+  .option('-d, --doc [type]', 'display generator documentation');
 
 program.on('--help', function() {
   console.log('  Examples:');
@@ -17,6 +19,8 @@ program.on('--help', function() {
   console.log('    scaffolt view user');
   console.log('    scaffolt model cart --revert');
   console.log('    scaffolt controller header --path controllers/regions/header.coffee');
+  console.log('    scaffolt --list');
+  console.log('    scaffolt collection --doc');
   console.log('');
 });
 
@@ -27,22 +31,44 @@ var count = args.length;
 var first = args[0];
 var type, name;
 
-if (count < 2) program.help();
-
-if ([program.path, program.revert, program.generators].indexOf(first) === -1) {
-  type = first;
-  name = args[1];
-} else {
-  type = args[count - 2];
-  name = args[count - 1];
-}
-
-if (!type || !name) program.help();
 
 var scaffolt = require('./');
 
-scaffolt(type, name, {
-  parentPath: program.path,
-  generatorsPath: program.generators,
-  revert: program.revert,
-});
+if (program.list) {
+  scaffolt.list({
+    generatorsPath: program.generators
+  });
+}
+else if (program.doc) {
+  if (count < 1) program.help();
+
+  if ([program.doc].indexOf(first) === -1) {
+    type = first;
+  } else {
+    type = args[count - 1];
+  }
+
+  scaffolt.help( type, {
+    generatorsPath: program.generators
+  });
+}
+else
+{
+  if (count < 2) program.help();
+
+  if ([program.path, program.revert, program.generators].indexOf(first) === -1) {
+    type = first;
+    name = args[1];
+  } else {
+    type = args[count - 2];
+    name = args[count - 1];
+  }
+
+  if (!type || !name) program.help();
+
+  scaffolt(type, name, {
+    parentPath: program.path,
+    generatorsPath: program.generators,
+    revert: program.revert,
+  });
+}
