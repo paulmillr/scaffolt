@@ -60,7 +60,6 @@ Helpers definition file example:
 
 ```javascript
 module.exports = function(Handlebars) {
-  console.log("helpers!!");
   Handlebars.registerHelper('date', (function() {
     var date = new Date();
     return function(options) {
