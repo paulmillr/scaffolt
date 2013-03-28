@@ -16,6 +16,7 @@ Options:
   -p, --path [path]        path to directory to which recipe will be copied
   -r, --revert             should scaffolt revert changes done by previous scaffolding?
   -g, --generators [path]  path to directory which contains generators specifications [./generators]
+  -h, --helpers [path]     path to helper definition file which contains Handlebars helpers [./helpers.js]
   -l, --list               list availables generators
   -d, --doc [type]         display generator documentation
 ```
@@ -26,6 +27,7 @@ Examples:
 scaffolt view user
 scaffolt model cart --revert
 scaffolt controller header --path controllers/regions/header.coffee
+scaffolt view product --helpers customHelpers.js
 scaffolt --list
 scaffolt collection --doc
 ```
@@ -53,6 +55,26 @@ Generator JSON example (more examples: [paulmillr/brunch-with-chaplin](https://g
   ]
 }
 ```
+
+Helpers definition file example:
+
+```javascript
+module.exports = function(Handlebars) {
+  console.log("helpers!!");
+  Handlebars.registerHelper('date', (function() {
+    var date = new Date();
+    return function(options) {
+      return date.toString();
+    };
+  })());
+};
+```
+
+So now you can use it in your generators source file. example:
+
+```
+# Generation Date : {{date}}
+``
 
 You can use it programmatically too, from node.js:
 

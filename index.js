@@ -27,6 +27,17 @@ Handlebars.registerHelper('camelize', (function() {
   };
 })());
 
+exports.loadHelpers = function(helpersPath)
+{
+  var path = sysPath.resolve(sysPath.join(helpersPath));
+  fs.stat(path, function(error, stats) {
+    if (error == null && stats.isFile()) {
+      var helpers = require(path);
+      helpers(Handlebars);
+    }
+  });
+}
+
 exports.generateFile = function(path, data, method, callback) {
   fs.exists(path, function(exists) {
     if (exists && method !== 'overwrite' && method !== 'append') {
@@ -267,14 +278,17 @@ var scaffolt = module.exports = function(type, name, options, callback) {
 
   var pluralName = options.pluralName;
   var generatorsPath = options.generatorsPath;
+  var helpersPath = options.helpersPath;
   var revert = options.revert;
   var parentPath = options.parentPath;
 
   if (pluralName == null) pluralName = inflection.pluralize(name);
   if (generatorsPath == null) generatorsPath = 'generators';
+  if (helpersPath == null) helpersPath = 'helpers.js';
   if (revert == null) revert = false;
   var templateData = {name: name, pluralName: pluralName};
 
+  exports.loadHelpers(helpersPath);
   exports.generateFiles(revert, generatorsPath, type, templateData, parentPath, function(error) {
     if (error != null) {
       logger.error(error);
@@ -292,8 +306,10 @@ scaffolt.list = function( options, callback )
   if (callback == null) callback = function() {};
 
   var generatorsPath = options.generatorsPath;
+  var helpersPath = options.helpersPath;
 
   if (generatorsPath == null) generatorsPath = 'generators';
+  if (helpersPath == null) helpersPath = 'helpers.js';
 
   exports.listGenerators(generatorsPath, function(error) {
     if (error != null) {
