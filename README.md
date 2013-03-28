@@ -74,7 +74,7 @@ So now you can use it in your generators source file. example:
 
 ```
 # Generation Date : {{date}}
-``
+```
 
 You can use it programmatically too, from node.js:
 
