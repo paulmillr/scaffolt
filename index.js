@@ -27,6 +27,13 @@ Handlebars.registerHelper('camelize', (function() {
   };
 })());
 
+exports.loadHelpers = function(helpersPath)
+{
+  var path = sysPath.resolve(helpersPath);
+  var helpers = require(path);
+  helpers(Handlebars);
+}
+
 exports.generateFile = function(path, data, method, callback) {
   fs.exists(path, function(exists) {
     if (exists && method !== 'overwrite' && method !== 'append') {
@@ -108,6 +115,9 @@ exports.scaffoldFile = function(revert, from, to, method, templateData, parentPa
 
 exports.scaffoldFiles = function(revert, templateData, parentPath) {
   return function(generator, callback) {
+    if (generator.helpers) {
+      exports.loadHelpers( generator.helpers );
+    }
     async.forEach(generator.files, function(args, next) {
       exports.scaffoldFile(
         revert, args.from, args.to, args.method, templateData, parentPath, next
@@ -130,7 +140,14 @@ exports.readGeneratorConfig = function(generatorsPath) {
     var path = sysPath.resolve(sysPath.join(generatorsPath, name, 'generator.json'));
     var json = require(path);
     json.name = name;
-    callback(null, json);
+
+    var helpersPath = sysPath.join(generatorsPath, name, 'helpers.js');
+    fs.stat(sysPath.resolve(helpersPath), function(error, stats) {
+      if (error == null && stats.isFile()) {
+        json.helpers = helpersPath;
+      }
+      callback(null, json);
+    });
   };
 };
 
