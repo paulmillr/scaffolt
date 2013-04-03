@@ -10,7 +10,6 @@ program
   .option('-p, --path [path]', 'path to directory to which recipe will be copied')
   .option('-r, --revert', 'should scaffolt revert changes done by previous scaffolding?')
   .option('-g, --generators [path]', 'path to directory which contains generators specifications [./generators]')
-  .option('-h, --helpers [path]', 'path to helper definition file which contains Handlebars helpers [./helpers.js]')
   .option('-l, --list', 'list availables generators')
   .option('-d, --doc [type]', 'display generator documentation');
 
@@ -20,7 +19,6 @@ program.on('--help', function() {
   console.log('    scaffolt view user');
   console.log('    scaffolt model cart --revert');
   console.log('    scaffolt controller header --path controllers/regions/header.coffee');
-  console.log('    scaffolt view product --helpers customHelpers.js');
   console.log('    scaffolt --list');
   console.log('    scaffolt collection --doc');
   console.log('');
@@ -58,7 +56,7 @@ else
 {
   if (count < 2) program.help();
 
-  if ([program.path, program.revert, program.generators, program.helpers].indexOf(first) === -1) {
+  if ([program.path, program.revert, program.generators].indexOf(first) === -1) {
     type = first;
     name = args[1];
   } else {
@@ -71,7 +69,6 @@ else
   scaffolt(type, name, {
     parentPath: program.path,
     generatorsPath: program.generators,
-    helpersPath: program.helpers,
     revert: program.revert,
   });
 }

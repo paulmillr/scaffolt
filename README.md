@@ -56,7 +56,9 @@ Generator JSON example (more examples: [paulmillr/brunch-with-chaplin](https://g
 }
 ```
 
-Helpers definition file example:
+You can add Handlebars helpers in your generator folder by adding `helper.js` file.
+
+Generator Helpers definition file example:
 
 ```javascript
 module.exports = function(Handlebars) {
@@ -69,7 +71,7 @@ module.exports = function(Handlebars) {
 };
 ```
 
-So now you can use it in your generators source file. example:
+So now you can use it in your generators source file. Example:
 
 ```
 # Generation Date : {{date}}
