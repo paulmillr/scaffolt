@@ -30,7 +30,11 @@ scaffolt --list
 scaffolt collection --doc
 ```
 
-Generator JSON example (more examples: [paulmillr/brunch-with-chaplin](https://github.com/paulmillr/brunch-with-chaplin/tree/master/generators)):
+Generator JSON examples (more examples: [paulmillr/brunch-with-chaplin](https://github.com/paulmillr/brunch-with-chaplin/tree/master/generators)):
+
+```json
+{"files": [{"from": "model.js.hbs", "to": "app/models/{{name}}.js"}]}
+```
 
 ```json
 {
