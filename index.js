@@ -206,7 +206,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
   });
 };
 
-exports.listGenerators = function( generatorsPath, callback ) {
+exports.listGenerators = function(generatorsPath, callback) {
   fs.readdir(generatorsPath, function(error, files) {
     if (error != null) throw new Error(error);
 
@@ -219,9 +219,9 @@ exports.listGenerators = function( generatorsPath, callback ) {
       });
     });
   });
-}
+};
 
-exports.helpGenerator = function( generatorsPath, type, templateData ) {
+exports.helpGenerator = function(generatorsPath, type, templateData) {
   fs.readdir(generatorsPath, function(error, files) {
     if (error != null) throw new Error(error);
 
@@ -243,14 +243,13 @@ exports.helpGenerator = function( generatorsPath, type, templateData ) {
           if (index == 0) {
             console.log("Documentation for '" + type + "' generator:");
             console.log(" 'scaffolt " + type + " name'");
-          }
-          else {
+          } else {
             console.log(" * " + generator.name);
           }
           async.forEach(generator.files, function(args) {
             console.log("   will " + args.method + " " + args.to);
           });
-          if (index == 0 && tree.length > 1) {
+          if (index === 0 && tree.length > 1) {
             console.log("");
             console.log("Dependencies:");
           }
@@ -258,7 +257,19 @@ exports.helpGenerator = function( generatorsPath, type, templateData ) {
       });
     });
   });
-}
+};
+
+var checkIfExists = function(generatorsPath, callback) {
+  fs.exists(generatorsPath, function(exists) {
+    if (!exists) {
+      var msg = 'Generators directory "' + generatorsPath + '" does not exist';
+      logger.error(msg);
+      return callback(new Error(msg));
+    }
+
+    callback();
+  });
+};
 
 var scaffolt = module.exports = function(type, name, options, callback) {
   // Set some default params.
@@ -275,45 +286,44 @@ var scaffolt = module.exports = function(type, name, options, callback) {
   if (revert == null) revert = false;
   var templateData = {name: name, pluralName: pluralName};
 
-  exports.generateFiles(revert, generatorsPath, type, templateData, parentPath, function(error) {
-    if (error != null) {
-      logger.error(error);
-      return callback(error);
-    }
-    callback();
+  checkIfExists(generatorsPath, function(exists) {
+    exports.generateFiles(revert, generatorsPath, type, templateData, parentPath, function(error) {
+      if (error != null) {
+        logger.error(error);
+        return callback(error);
+      }
+      callback();
+    });
   });
 };
 
 
-scaffolt.list = function( options, callback )
-{
+scaffolt.list = function(options, callback) {
   // Set some default params
-  if (options == null) options = {};  
+  if (options == null) options = {};
   if (callback == null) callback = function() {};
-
   var generatorsPath = options.generatorsPath;
-
   if (generatorsPath == null) generatorsPath = 'generators';
 
-  exports.listGenerators(generatorsPath, function(error) {
-    if (error != null) {
-      logger.error(error);
-      return callback(error);
-    }
-    callback();
+  checkIfExists(generatorsPath, function() {
+    exports.listGenerators(generatorsPath, function(error) {
+      if (error != null) {
+        logger.error(error);
+        return callback(error);
+      }
+      callback();
+    });
   });
-}
+};
 
-scaffolt.help = function( type, options )
-{
+scaffolt.help = function(type, options) {
   // Set some default params
-  if (options == null) options = {};  
-
+  if (options == null) options = {};
   var generatorsPath = options.generatorsPath;
-
   if (generatorsPath == null) generatorsPath = 'generators';
   var templateData = {name: "name", pluralName: "names"};
 
-  exports.helpGenerator(generatorsPath, type, templateData);
-}
-
+  checkIfExists(generatorsPath, function() {
+    exports.helpGenerator(generatorsPath, type, templateData);
+  });
+};

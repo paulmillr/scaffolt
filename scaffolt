@@ -5,7 +5,7 @@ var program = require('commander');
 var argv = process.argv;
 
 program
-  .version('0.1.0')
+  .version(require('./package.json').version)
   .usage('<type> <name> [options]')
   .option('-p, --path [path]', 'path to directory to which recipe will be copied')
   .option('-r, --revert', 'should scaffolt revert changes done by previous scaffolding?')
@@ -38,8 +38,7 @@ if (program.list) {
   scaffolt.list({
     generatorsPath: program.generators
   });
-}
-else if (program.doc) {
+} else if (program.doc) {
   if (count < 1) program.help();
 
   if ([program.doc].indexOf(first) === -1) {
@@ -48,12 +47,8 @@ else if (program.doc) {
     type = args[count - 1];
   }
 
-  scaffolt.help( type, {
-    generatorsPath: program.generators
-  });
-}
-else
-{
+  scaffolt.help(type, {generatorsPath: program.generators});
+} else {
   if (count < 2) program.help();
 
   if ([program.path, program.revert, program.generators].indexOf(first) === -1) {
