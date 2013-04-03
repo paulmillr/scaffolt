@@ -13,7 +13,7 @@ Options:
 
   -h, --help               output usage information
   -V, --version            output the version number
-  -p, --path [path]        path to directory to which recipe will be copied
+  -p, --path [path]        override path to directory to which recipe will be copied
   -r, --revert             should scaffolt revert changes done by previous scaffolding?
   -g, --generators [path]  path to directory which contains generators specifications [./generators]
   -l, --list               list availables generators

@@ -7,7 +7,7 @@ var argv = process.argv;
 program
   .version(require('./package.json').version)
   .usage('<type> <name> [options]')
-  .option('-p, --path [path]', 'path to directory to which recipe will be copied')
+  .option('-p, --path [path]', 'override path to directory to which recipe will be copied')
   .option('-r, --revert', 'should scaffolt revert changes done by previous scaffolding?')
   .option('-g, --generators [path]', 'path to directory which contains generators specifications [./generators]')
   .option('-l, --list', 'list availables generators')
