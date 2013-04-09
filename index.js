@@ -231,8 +231,14 @@ exports.listGenerators = function(generatorsPath, callback) {
     async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
       console.log("List of available generators in " + generatorsPath);
 
-      directories.map(function(directory, index) {
-        console.log(" * " + directory);
+      async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
+        configs.map(function(generator){
+          var doc = " * " + generator.name;
+          if (generator.description) {
+            doc += " ("+ generator.description + ")";
+          }
+          console.log(doc);
+        });
       });
     });
   });
@@ -253,20 +259,28 @@ exports.helpGenerator = function(generatorsPath, type, templateData) {
           return exports.formatGeneratorConfig(path, configs[index], templateData);
         });
 
-        // Calculate dependency trees
         var tree = exports.getDependencyTree(generators, type);
         tree.reverse();
         tree.map(function(generator, index) {
           if (index == 0) {
+
             console.log("Documentation for '" + type + "' generator:");
-            console.log(" 'scaffolt " + type + " name'");
-          } else {
-            console.log(" * " + generator.name);
+            if (generator.description) {
+              console.log(generator.description+"\n");
+            }
+            console.log("'scaffolt " + type + " name'");
+          }
+          else {
+            var doc = " * " + generator.name;
+            if (generator.description) {
+              doc += " (" + generator.description + ")";
+            }
+            console.log(doc);
           }
           async.forEach(generator.files, function(args) {
-            console.log("   will " + args.method + " " + args.to);
+            console.log("\twill " + args.method + " " + args.to);
           });
-          if (index === 0 && tree.length > 1) {
+          if (index == 0 && tree.length > 1) {
             console.log("");
             console.log("Dependencies:");
           }

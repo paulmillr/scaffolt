@@ -54,9 +54,11 @@ Generator JSON examples (more examples: [paulmillr/brunch-with-chaplin](https://
     {"name": "view", "params": "{{name}}-item"},
     {"name": "style", "params": "{{pluralName}}"},
     {"name": "template", "params": "{{pluralName}}"}
-  ]
+  ],
+  "description" : "Simple controller"
 }
 ```
+`description` field is optionnal.
 
 You can add Handlebars helpers in your generator folder by adding `helper.js` file.
 
