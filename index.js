@@ -101,6 +101,7 @@ exports.scaffoldFile = function(revert, from, to, method, templateData, parentPa
         try {
           return exports.formatTemplate(contents, templateData);
         } catch (error) {
+          console.log(error);
           return contents;
         }
       })();
