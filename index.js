@@ -27,6 +27,12 @@ Handlebars.registerHelper('camelize', (function() {
   };
 })());
 
+Handlebars.registerHelper('through', (function() {
+  return function(options) {
+    return new Handlebars.SafeString("{{" + options.hash["value"] + "}}")
+  };
+})());
+
 exports.loadHelpers = function(helpersPath)
 {
   var path = sysPath.resolve(helpersPath);
