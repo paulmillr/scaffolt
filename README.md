@@ -60,7 +60,7 @@ Generator JSON examples (more examples: [paulmillr/brunch-with-chaplin](https://
 ```
 `description` field is optionnal.
 
-You can add Handlebars helpers in your generator folder by adding `helper.js` file.
+You can add Handlebars helpers in your generator folder by adding `helpers.js` file.
 
 Generator Helpers definition file example:
 
