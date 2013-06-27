@@ -27,6 +27,12 @@ Handlebars.registerHelper('camelize', (function() {
   };
 })());
 
+Handlebars.registerHelper('through', (function() {
+  return function(options) {
+    return new Handlebars.SafeString("{{" + options.hash["value"] + "}}")
+  };
+})());
+
 exports.loadHelpers = function(helpersPath)
 {
   var path = sysPath.resolve(helpersPath);
@@ -101,6 +107,7 @@ exports.scaffoldFile = function(revert, from, to, method, templateData, parentPa
         try {
           return exports.formatTemplate(contents, templateData);
         } catch (error) {
+          console.log(error);
           return contents;
         }
       })();
