@@ -1,3 +1,6 @@
+# scaffolt 0.3.1 (28 June 2013)
+* Added support for `{{through}}` helper.
+
 # scaffolt 0.3.0 (16 May 2013)
 * Added `description` field for generators.
 * Added support for custom handlebars helpers.
