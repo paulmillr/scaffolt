@@ -1,12 +1,26 @@
 'use strict';
 
-var async = require('async');
+var each = require('async-each');
 var fs = require('fs');
 var Handlebars = require('handlebars');
 var inflection = require('inflection');
 var mkdirp = require('mkdirp');
 var sysPath = require('path');
 var logger = require('loggy');
+
+// Async filter.
+var filter = function(list, predicate, callback) {
+  each(list, function(item, next) {
+    predicate(item, function(value) {
+      next(undefined, value);
+    });
+  }, function(error, filtered) {
+    if (error) throw new Error(error);
+    callback(list.filter(function(_, index) {
+      return filtered[index];
+    }));
+  });
+};
 
 exports.formatTemplate = function(template, templateData) {
   var key = '__TEMPLATE_FORMATTER';
@@ -33,8 +47,7 @@ Handlebars.registerHelper('through', (function() {
   };
 })());
 
-exports.loadHelpers = function(helpersPath)
-{
+exports.loadHelpers = function(helpersPath) {
   var path = sysPath.resolve(helpersPath);
   var helpers = require(path);
   helpers(Handlebars);
@@ -125,7 +138,7 @@ exports.scaffoldFiles = function(revert, templateData, parentPath) {
     if (generator.helpers) {
       exports.loadHelpers( generator.helpers );
     }
-    async.forEach(generator.files, function(args, next) {
+    each(generator.files, function(args, next) {
       exports.scaffoldFile(
         revert, args.from, args.to, args.method, templateData, parentPath, next
       );
@@ -209,10 +222,9 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
     if (error != null) throw new Error(error);
 
     // Get directories from generators directory.
-    async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
-
+    filter(files, exports.isDirectory(generatorsPath), function(directories) {
       // Read all generator configs.
-      async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
+      each(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         if (error != null) throw new Error(error);
         var generators = directories.map(function(directory, index) {
           var path = sysPath.join(generatorsPath, directory);
@@ -221,10 +233,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
 
         // Calculate dependency trees, do the scaffolding.
         var tree = exports.getDependencyTree(generators, type);
-        async.forEach(tree, exports.scaffoldFiles(revert, templateData, parentPath), function(error) {
-          if (error != null) return callback(error);
-          callback();
-        });
+        each(tree, exports.scaffoldFiles(revert, templateData, parentPath), callback);
       });
     });
   });
@@ -235,10 +244,10 @@ exports.listGenerators = function(generatorsPath, callback) {
     if (error != null) throw new Error(error);
 
     // Get directories from generators directory.
-    async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
+    filter(files, exports.isDirectory(generatorsPath), function(directories) {
       console.log("List of available generators in " + generatorsPath);
 
-      async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
+      each(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         configs.map(function(generator){
           var doc = " * " + generator.name;
           if (generator.description) {
@@ -256,10 +265,10 @@ exports.helpGenerator = function(generatorsPath, type, templateData) {
     if (error != null) throw new Error(error);
 
     // Get directories from generators directory.
-    async.filter(files, exports.isDirectory(generatorsPath), function(directories) {
+    filter(files, exports.isDirectory(generatorsPath), function(directories) {
 
       // Read all generator configs.
-      async.map(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
+      each(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         if (error != null) throw new Error(error);
         var generators = directories.map(function(directory, index) {
           var path = sysPath.join(generatorsPath, directory);
@@ -284,7 +293,7 @@ exports.helpGenerator = function(generatorsPath, type, templateData) {
             }
             console.log(doc);
           }
-          async.forEach(generator.files, function(args) {
+          each(generator.files, function(args) {
             console.log("\twill " + args.method + " " + args.to);
           });
           if (index == 0 && tree.length > 1) {

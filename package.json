@@ -23,10 +23,10 @@
   "license": "MIT",
   "dependencies": {
     "inflection": "~1.2.5",
-    "async": "~0.2.5",
+    "async-each": "~0.1.1",
     "mkdirp": "~0.3.5",
     "handlebars": "~1.0.9",
     "loggy": "~0.2.0",
-    "commander": "~1.1.1"
+    "commander": "~1.2.0"
   }
 }
