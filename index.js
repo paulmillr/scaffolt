@@ -191,13 +191,17 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
     };
   });
 
-  json.dependencies = json.dependencies.map(function(object) {
-    return {
-      method: object.method || 'create',
-      name: object.name,
-      params: exports.formatTemplate(object.params, templateData)
-    };
-  });
+  if (json.dependencies) {
+    json.dependencies = json.dependencies.map(function(object) {
+      return {
+        method: object.method || 'create',
+        name: object.name,
+        params: exports.formatTemplate(object.params, templateData)
+      };
+    });
+  } else {
+    json.dependencies = [];
+  }
 
   return Object.freeze(json);
 };

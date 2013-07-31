@@ -1,3 +1,6 @@
+# scaffolt 0.3.2 (31 July 2013)
+* Fixed a bug with missing dependencies in json configs.
+
 # scaffolt 0.3.1 (28 June 2013)
 * Added support for `{{through}}` helper.
 
