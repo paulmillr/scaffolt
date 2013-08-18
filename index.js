@@ -8,6 +8,24 @@ var mkdirp = require('mkdirp');
 var sysPath = require('path');
 var logger = require('loggy');
 
+var clone = function(object) {
+  if (typeof object !== 'object') return object;
+  if (Array.isArray(object)) return object.slice().map(clone);
+  var cloned = {};
+  Object.keys(object).forEach(function(key) {
+    cloned[key] = clone(object[key]);
+  });
+  return cloned;
+}
+
+var replaceSlashes = function(string) {
+  if (sysPath.sep === '\\') {
+    return string.replace(/\//g, '\\');
+  } else {
+    return string;
+  }
+};
+
 // Async filter.
 var filter = function(list, predicate, callback) {
   each(list, function(item, next) {
@@ -23,6 +41,7 @@ var filter = function(list, predicate, callback) {
 };
 
 exports.formatTemplate = function(template, templateData) {
+  if (!template) return '';
   var key = '__TEMPLATE_FORMATTER';
   var compiled = Handlebars.compile(template.replace(/\\\{/, key));
   return compiled(templateData).toString().replace(key, '\\');
@@ -108,10 +127,13 @@ exports.amendFile = function(path, contents, callback) {
   });
 };
 
-exports.scaffoldFile = function(revert, from, to, method, templateData, parentPath, callback) {
-  if (parentPath) {
-    to = sysPath.join(parentPath, sysPath.basename(to));
-  }
+exports.scaffoldFile = function(revert, from, base, method, baseTemplateData, parentPath, name, callback) {
+  var templateData = {
+    name: name || baseTemplateData.name,
+    pluralName: name ? inflection.pluralize(name) : baseTemplateData.pluralName,
+    parentPath: parentPath
+  };
+  var to = exports.formatTemplate(sysPath.join(parentPath, base), templateData);
   if (revert && method !== 'append') {
     exports.destroyFile(to, callback);
   } else {
@@ -135,12 +157,10 @@ exports.scaffoldFile = function(revert, from, to, method, templateData, parentPa
 
 exports.scaffoldFiles = function(revert, templateData, parentPath) {
   return function(generator, callback) {
-    if (generator.helpers) {
-      exports.loadHelpers( generator.helpers );
-    }
+    if (generator.helpers) exports.loadHelpers(generator.helpers);
     each(generator.files, function(args, next) {
       exports.scaffoldFile(
-        revert, args.from, args.to, args.method, templateData, parentPath, next
+        revert, args.from, args.base, args.method, templateData, args.parentPath || parentPath, args.name, next
       );
     }, callback);
   };
@@ -156,12 +176,12 @@ exports.isDirectory = function(generatorsPath) {
 };
 
 exports.readGeneratorConfig = function(generatorsPath) {
-  return function(name, callback) {
-    var path = sysPath.resolve(sysPath.join(generatorsPath, name, 'generator.json'));
+  return function(type, callback) {
+    var path = sysPath.resolve(sysPath.join(generatorsPath, type, 'generator.json'));
     var json = require(path);
-    json.name = name;
+    json.type = type;
 
-    var helpersPath = sysPath.join(generatorsPath, name, 'helpers.js');
+    var helpersPath = sysPath.join(generatorsPath, type, 'helpers.js');
     fs.stat(sysPath.resolve(helpersPath), function(error, stats) {
       if (error == null && stats.isFile()) {
         json.helpers = helpersPath;
@@ -175,49 +195,55 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
   var join = function(file) {
     return sysPath.join(path, file);
   };
-  var replaceSlashes = function(string) {
-    if (sysPath.sep === '\\') {
-      return string.replace(/\//g, '\\');
-    } else {
-      return string;
-    }
-  };
+
+  if (json.dependencies == null) json.dependencies = [];
+
+  var defaultMethod = 'create';
 
   json.files = json.files.map(function(object) {
     return {
-      method: object.method || 'create',
+      method: object.method || defaultMethod,
+      base: sysPath.basename(object.to),
       from: join(replaceSlashes(object.from)),
-      to: replaceSlashes(exports.formatTemplate(object.to, templateData))
+      parentPath: sysPath.dirname(replaceSlashes(object.to))
     };
   });
 
-  if (json.dependencies) {
-    json.dependencies = json.dependencies.map(function(object) {
-      return {
-        method: object.method || 'create',
-        name: object.name,
-        params: exports.formatTemplate(object.params, templateData)
-      };
-    });
-  } else {
-    json.dependencies = [];
-  }
+  json.dependencies = json.dependencies.map(function(object) {
+    if (!object.type) {
+      object.type = object.name;
+      object.name = undefined;
+    }
+
+    return {
+      method: object.method || defaultMethod,
+      type: exports.formatTemplate(object.type, templateData),
+      name: exports.formatTemplate(object.name || templateData.name, templateData),
+      parentPath: exports.formatTemplate(object.parentPath || templateData.parentPath, templateData)
+    };
+  });
 
   return Object.freeze(json);
 };
 
-exports.getDependencyTree = function(generators, generatorName, memo) {
+exports.getDependencyTree = function(generators, type, memo, dep) {
   if (memo == null) memo = [];
-  var generator = generators.filter(function(gen) {
-    return gen.name === generatorName;
-  })[0];
+  var generator = clone(generators.filter(function(gen) {
+    return gen.type === type;
+  })[0]);
   if (generator == null) {
-    throw new Error("Invalid generator " + generatorName);
+    throw new Error("Invalid generator " + type);
+  }
+  if (dep) {
+    generator.files.forEach(function(file) {
+      if (dep.parentPath) file.parentPath = dep.parentPath;
+      if (dep.name) file.name = dep.name;
+    });
   }
   (generator.dependencies || []).forEach(function(dependency) {
-    exports.getDependencyTree(generators, dependency.name, memo);
+    exports.getDependencyTree(generators, dependency.type, memo, dependency);
   });
-  memo.push(generator);
+  memo.push(Object.freeze(generator));
   return memo;
 };
 
@@ -237,6 +263,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
 
         // Calculate dependency trees, do the scaffolding.
         var tree = exports.getDependencyTree(generators, type);
+        // console.log(JSON.stringify(tree, null, 2));
         each(tree, exports.scaffoldFiles(revert, templateData, parentPath), callback);
       });
     });
@@ -254,9 +281,7 @@ exports.listGenerators = function(generatorsPath, callback) {
       each(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         configs.map(function(generator){
           var doc = " * " + generator.name;
-          if (generator.description) {
-            doc += " ("+ generator.description + ")";
-          }
+          if (generator.description) doc += " ("+ generator.description + ")";
           console.log(doc);
         });
       });
@@ -289,9 +314,8 @@ exports.helpGenerator = function(generatorsPath, type, templateData) {
               console.log(generator.description+"\n");
             }
             console.log("'scaffolt " + type + " name'");
-          }
-          else {
-            var doc = " * " + generator.name;
+          } else {
+            var doc = " * " + generator.type;
             if (generator.description) {
               doc += " (" + generator.description + ")";
             }
@@ -335,7 +359,7 @@ var scaffolt = module.exports = function(type, name, options, callback) {
   if (pluralName == null) pluralName = inflection.pluralize(name);
   if (generatorsPath == null) generatorsPath = 'generators';
   if (revert == null) revert = false;
-  var templateData = {name: name, pluralName: pluralName};
+  var templateData = {name: name, pluralName: pluralName, parentPath: parentPath};
 
   checkIfExists(generatorsPath, function(exists) {
     exports.generateFiles(revert, generatorsPath, type, templateData, parentPath, function(error) {
