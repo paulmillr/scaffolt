@@ -1,3 +1,7 @@
+# scaffolt 0.4.0 (19 August 2013)
+* Now allowing to override path and name in dependencies. Closes gh-8.
+* `"name"` in generators was changed to `"type"`.
+
 # scaffolt 0.3.2 (31 July 2013)
 * Fixed a bug with missing dependencies in json configs.
 

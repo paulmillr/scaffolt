@@ -50,10 +50,10 @@ Generator JSON examples (more examples: [paulmillr/brunch-with-chaplin](https://
     }
   ],
   "dependencies": [
-    {"name": "model", "params": "{{name}}"},
-    {"name": "view", "params": "{{name}}-item"},
-    {"name": "style", "params": "{{pluralName}}"},
-    {"name": "template", "params": "{{pluralName}}"}
+    {"type": "model"},
+    {"type": "view", "name": "{{name}}-item"},
+    {"type": "style", "name": "{{pluralName}}", "parentPath": "{{parentPath}}/styles"},
+    {"type": "template", "name": "{{pluralName}}", parentPath: "{{parentPath}}/templates"}
   ],
   "description" : "Simple controller"
 }
