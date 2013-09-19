@@ -25,7 +25,7 @@ Examples:
 ```bash
 scaffolt view user
 scaffolt model cart --revert
-scaffolt controller header --path controllers/regions/header.coffee
+scaffolt controller header --path controllers/regions
 scaffolt --list
 scaffolt collection --doc
 ```
