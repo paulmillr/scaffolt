@@ -1,3 +1,6 @@
+# scaffolt 0.4.1 (22 September 2013)
+* Fixed `parentPath` option.
+
 # scaffolt 0.4.0 (19 August 2013)
 * Now allowing to override path and name in dependencies. Closes gh-8.
 * `"name"` in generators was changed to `"type"`.

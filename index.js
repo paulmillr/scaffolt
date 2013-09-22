@@ -76,9 +76,7 @@ exports.generateFile = function(path, data, method, callback) {
   fs.exists(path, function(exists) {
     if (exists && method !== 'overwrite' && method !== 'append') {
       logger.info("skipping " + path + " (already exists)");
-      if (callback != null) {
-        return callback();
-      }
+      if (callback != null) return callback();
     } else {
       var parentDir = sysPath.dirname(path);
       var write = function() {
@@ -160,7 +158,8 @@ exports.scaffoldFiles = function(revert, templateData, parentPath) {
     if (generator.helpers) exports.loadHelpers(generator.helpers);
     each(generator.files, function(args, next) {
       exports.scaffoldFile(
-        revert, args.from, args.base, args.method, templateData, args.parentPath || parentPath, args.name, next
+        revert, args.from, args.base, args.method, templateData,
+        parentPath || args.parentPath, args.name, next
       );
     }, callback);
   };
