@@ -25,7 +25,7 @@ Examples:
 ```bash
 scaffolt view user
 scaffolt model cart --revert
-scaffolt controller header --path controllers/regions/header.coffee
+scaffolt controller header --path controllers/regions
 scaffolt --list
 scaffolt collection --doc
 ```
@@ -53,7 +53,7 @@ Generator JSON examples (more examples: [paulmillr/brunch-with-chaplin](https://
     {"type": "model"},
     {"type": "view", "name": "{{name}}-item"},
     {"type": "style", "name": "{{pluralName}}", "parentPath": "{{parentPath}}/styles"},
-    {"type": "template", "name": "{{pluralName}}", parentPath: "{{parentPath}}/templates"}
+    {"type": "template", "name": "{{pluralName}}", "parentPath": "{{parentPath}}/templates"}
   ],
   "description" : "Simple controller"
 }
