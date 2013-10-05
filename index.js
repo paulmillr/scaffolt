@@ -278,8 +278,9 @@ exports.listGenerators = function(generatorsPath, callback) {
       console.log("List of available generators in " + generatorsPath);
 
       each(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
-        configs.map(function(generator){
-          var doc = " * " + generator.name;
+        configs.map(function(generator) {
+          var doc = " * ";
+          doc += (generator.name) ? generator.name : generator.type;
           if (generator.description) doc += " ("+ generator.description + ")";
           console.log(doc);
         });
