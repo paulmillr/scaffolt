@@ -159,7 +159,7 @@ exports.scaffoldFiles = function(revert, templateData, parentPath) {
     each(generator.files, function(args, next) {
       exports.scaffoldFile(
         revert, args.from, args.base, args.method, templateData,
-        parentPath || args.parentPath, args.name, next
+        args.parentPath || parentPath, args.name, next
       );
     }, callback);
   };
@@ -233,7 +233,7 @@ exports.getDependencyTree = function(generators, type, memo, dep) {
   if (generator == null) {
     throw new Error("Invalid generator " + type);
   }
-  if (dep) {
+  if (dep && dep.parantPath) {
     generator.files.forEach(function(file) {
       if (dep.parentPath) file.parentPath = dep.parentPath;
       if (dep.name) file.name = dep.name;
