@@ -153,13 +153,13 @@ exports.scaffoldFile = function(revert, from, base, method, baseTemplateData, pa
   }
 };
 
-exports.scaffoldFiles = function(revert, templateData, parentPath) {
+exports.scaffoldFiles = function(revert, templateData) {
   return function(generator, callback) {
     if (generator.helpers) exports.loadHelpers(generator.helpers);
     each(generator.files, function(args, next) {
       exports.scaffoldFile(
         revert, args.from, args.base, args.method, templateData,
-        args.parentPath || parentPath, args.name, next
+        args.parentPath, args.name, next
       );
     }, callback);
   };
@@ -204,7 +204,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
       method: object.method || defaultMethod,
       base: sysPath.basename(object.to),
       from: join(replaceSlashes(object.from)),
-      parentPath: sysPath.dirname(replaceSlashes(object.to))
+      parentPath: templateData.parentPath || sysPath.dirname(replaceSlashes(object.to))
     };
   });
 
@@ -246,7 +246,7 @@ exports.getDependencyTree = function(generators, type, memo, dep) {
   return memo;
 };
 
-exports.generateFiles = function(revert, generatorsPath, type, templateData, parentPath, callback) {
+exports.generateFiles = function(revert, generatorsPath, type, templateData, callback) {
   fs.readdir(generatorsPath, function(error, files) {
     if (error != null) throw new Error(error);
 
@@ -263,7 +263,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
         // Calculate dependency trees, do the scaffolding.
         var tree = exports.getDependencyTree(generators, type);
         // console.log(JSON.stringify(tree, null, 2));
-        each(tree, exports.scaffoldFiles(revert, templateData, parentPath), callback);
+        each(tree, exports.scaffoldFiles(revert, templateData), callback);
       });
     });
   });
@@ -362,7 +362,7 @@ var scaffolt = module.exports = function(type, name, options, callback) {
   var templateData = {name: name, pluralName: pluralName, parentPath: parentPath};
 
   checkIfExists(generatorsPath, function(exists) {
-    exports.generateFiles(revert, generatorsPath, type, templateData, parentPath, function(error) {
+    exports.generateFiles(revert, generatorsPath, type, templateData, function(error) {
       if (error != null) {
         logger.error(error);
         return callback(error);
