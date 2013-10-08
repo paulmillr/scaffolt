@@ -153,13 +153,13 @@ exports.scaffoldFile = function(revert, from, base, method, baseTemplateData, pa
   }
 };
 
-exports.scaffoldFiles = function(revert, templateData, parentPath) {
+exports.scaffoldFiles = function(revert, templateData) {
   return function(generator, callback) {
     if (generator.helpers) exports.loadHelpers(generator.helpers);
     each(generator.files, function(args, next) {
       exports.scaffoldFile(
         revert, args.from, args.base, args.method, templateData,
-        parentPath || args.parentPath, args.name, next
+        args.parentPath, args.name, next
       );
     }, callback);
   };
@@ -202,11 +202,14 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
   json.files = json.files.map(function(object) {
     return {
       method: object.method || defaultMethod,
-      base: sysPath.basename(object.to),
+      base: sysPath.basename(replaceSlashes(object.to)),
       from: join(replaceSlashes(object.from)),
-      parentPath: sysPath.dirname(replaceSlashes(object.to))
+      parentPath: templateData.parentPath || sysPath.dirname(replaceSlashes(object.to))
     };
   });
+
+  if (templateData.parentPath) 
+    json.parentPath = templateData.parentPath;
 
   json.dependencies = json.dependencies.map(function(object) {
     if (!object.type) {
@@ -214,11 +217,18 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
       object.name = undefined;
     }
 
+    var dependencyTemplateData = clone(templateData);
+    dependencyTemplateData.parentPath = json.parentPath;
+    
+    if (object.parentPath && !json.parentPath) {
+      logger.warn('generator "' + json.type + '" needs parentPath to function correctly with dependencies');
+    }
+
     return {
       method: object.method || defaultMethod,
-      type: exports.formatTemplate(object.type, templateData),
-      name: exports.formatTemplate(object.name || templateData.name, templateData),
-      parentPath: exports.formatTemplate(object.parentPath || templateData.parentPath, templateData)
+      type: exports.formatTemplate(object.type, dependencyTemplateData),
+      name: exports.formatTemplate(object.name || dependencyTemplateData.name, dependencyTemplateData),
+      parentPath: exports.formatTemplate(object.parentPath || templateData.parentPath, dependencyTemplateData)
     };
   });
 
@@ -233,7 +243,7 @@ exports.getDependencyTree = function(generators, type, memo, dep) {
   if (generator == null) {
     throw new Error("Invalid generator " + type);
   }
-  if (dep) {
+  if (dep && dep.parantPath) {
     generator.files.forEach(function(file) {
       if (dep.parentPath) file.parentPath = dep.parentPath;
       if (dep.name) file.name = dep.name;
@@ -246,7 +256,7 @@ exports.getDependencyTree = function(generators, type, memo, dep) {
   return memo;
 };
 
-exports.generateFiles = function(revert, generatorsPath, type, templateData, parentPath, callback) {
+exports.generateFiles = function(revert, generatorsPath, type, templateData, callback) {
   fs.readdir(generatorsPath, function(error, files) {
     if (error != null) throw new Error(error);
 
@@ -263,7 +273,7 @@ exports.generateFiles = function(revert, generatorsPath, type, templateData, par
         // Calculate dependency trees, do the scaffolding.
         var tree = exports.getDependencyTree(generators, type);
         // console.log(JSON.stringify(tree, null, 2));
-        each(tree, exports.scaffoldFiles(revert, templateData, parentPath), callback);
+        each(tree, exports.scaffoldFiles(revert, templateData), callback);
       });
     });
   });
@@ -275,7 +285,7 @@ exports.listGenerators = function(generatorsPath, callback) {
 
     // Get directories from generators directory.
     filter(files, exports.isDirectory(generatorsPath), function(directories) {
-      console.log("List of available generators in " + generatorsPath);
+      console.log("List of available generators in ./" + generatorsPath + ":");
 
       each(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         configs.map(function(generator) {
@@ -362,7 +372,7 @@ var scaffolt = module.exports = function(type, name, options, callback) {
   var templateData = {name: name, pluralName: pluralName, parentPath: parentPath};
 
   checkIfExists(generatorsPath, function(exists) {
-    exports.generateFiles(revert, generatorsPath, type, templateData, parentPath, function(error) {
+    exports.generateFiles(revert, generatorsPath, type, templateData, function(error) {
       if (error != null) {
         logger.error(error);
         return callback(error);
