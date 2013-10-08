@@ -285,7 +285,7 @@ exports.listGenerators = function(generatorsPath, callback) {
 
     // Get directories from generators directory.
     filter(files, exports.isDirectory(generatorsPath), function(directories) {
-      console.log("List of available generators in " + generatorsPath);
+      console.log("List of available generators in ./" + generatorsPath + ":");
 
       each(directories, exports.readGeneratorConfig(generatorsPath), function(error, configs) {
         configs.map(function(generator) {
