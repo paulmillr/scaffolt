@@ -202,11 +202,14 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
   json.files = json.files.map(function(object) {
     return {
       method: object.method || defaultMethod,
-      base: sysPath.basename(object.to),
+      base: sysPath.basename(replaceSlashes(object.to)),
       from: join(replaceSlashes(object.from)),
       parentPath: templateData.parentPath || sysPath.dirname(replaceSlashes(object.to))
     };
   });
+
+  if (templateData.parentPath) 
+    json.parentPath = templateData.parentPath;
 
   json.dependencies = json.dependencies.map(function(object) {
     if (!object.type) {
@@ -214,11 +217,18 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
       object.name = undefined;
     }
 
+    var dependencyTemplateData = clone(templateData);
+    dependencyTemplateData.parentPath = json.parentPath;
+    
+    if (object.parentPath && !json.parentPath) {
+      logger.warn('generator "' + json.type + '" needs parentPath to function correctly with dependencies');
+    }
+
     return {
       method: object.method || defaultMethod,
-      type: exports.formatTemplate(object.type, templateData),
-      name: exports.formatTemplate(object.name || templateData.name, templateData),
-      parentPath: exports.formatTemplate(object.parentPath || templateData.parentPath, templateData)
+      type: exports.formatTemplate(object.type, dependencyTemplateData),
+      name: exports.formatTemplate(object.name || dependencyTemplateData.name, dependencyTemplateData),
+      parentPath: exports.formatTemplate(object.parentPath || templateData.parentPath, dependencyTemplateData)
     };
   });
 
