@@ -1,3 +1,6 @@
+# scaffolt 0.4.3 (13 October 2013)
+* Fixed typo.
+
 # scaffolt 0.4.2 (8 October 2013)
 * Fixed `parentPath` option, for real. Thanks to Stepan Mazurov.
 
