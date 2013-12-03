@@ -125,12 +125,11 @@ exports.amendFile = function(path, contents, callback) {
   });
 };
 
-exports.scaffoldFile = function(revert, from, base, method, baseTemplateData, parentPath, name, callback) {
-  var templateData = {
-    name: name || baseTemplateData.name,
-    pluralName: name ? inflection.pluralize(name) : baseTemplateData.pluralName,
-    parentPath: parentPath
-  };
+exports.scaffoldFile = function(revert, from, base, method, templateData, parentPath, name, callback) {
+  // inject directly
+  templateData.pluralName = name ? inflection.pluralize(name) : templateData.pluralName
+  templateData.parentPath = parentPath
+
   var to = exports.formatTemplate(sysPath.join(parentPath, base), templateData);
   if (revert && method !== 'append') {
     exports.destroyFile(to, callback);
@@ -369,7 +368,13 @@ var scaffolt = module.exports = function(type, name, options, callback) {
   if (pluralName == null) pluralName = inflection.pluralize(name);
   if (generatorsPath == null) generatorsPath = 'generators';
   if (revert == null) revert = false;
+
   var templateData = {name: name, pluralName: pluralName, parentPath: parentPath};
+  for(var key in options){
+    if(key[0] === '$'){
+      templateData[key] = options[key];
+    }
+  }
 
   checkIfExists(generatorsPath, function(exists) {
     exports.generateFiles(revert, generatorsPath, type, templateData, function(error) {

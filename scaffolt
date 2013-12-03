@@ -61,9 +61,15 @@ if (program.list) {
 
   if (!type || !name) program.help();
 
-  scaffolt(type, name, {
+  var templateData = {
     parentPath: program.parentPath,
     generatorsPath: program.generators,
-    revert: program.revert,
-  });
+    revert: program.revert
+  };
+
+  // Add args with prefix `$`
+  for(var i = 0; i < args.length ; i++)
+    templateData["$" + i.toString()] = args[i];
+
+  scaffolt(type, name, templateData);
 }
