@@ -242,7 +242,7 @@ exports.getDependencyTree = function(generators, type, memo, dep) {
   if (generator == null) {
     throw new Error("Invalid generator " + type);
   }
-  if (dep && dep.parentPath) {
+  if (dep) {
     generator.files.forEach(function(file) {
       if (dep.parentPath) file.parentPath = dep.parentPath;
       if (dep.name) file.name = dep.name;
