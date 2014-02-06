@@ -68,8 +68,13 @@ if (program.list) {
   };
 
   // Add args with prefix `$`
-  for(var i = 0; i < args.length ; i++)
-    templateData["$" + i.toString()] = args[i];
+  var entry, colon;
+  for(var i = 0; i < args.length ; i++) {
+    templateData["$" + i.toString()] = (entry = args[i]);
+    
+    if (-1 != (colon = entry.indexOf(':')))
+      templateData["@" + entry.substring(0, colon)] = entry.substring(colon + 1);
+  }
 
   scaffolt(type, name, templateData);
 }

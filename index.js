@@ -371,8 +371,15 @@ var scaffolt = module.exports = function(type, name, options, callback) {
 
   var templateData = {name: name, pluralName: pluralName, parentPath: parentPath};
   for(var key in options){
-    if(key[0] === '$'){
-      templateData[key] = options[key];
+    switch(key[0]) {
+      case '$':
+        templateData[key] = options[key];
+        break;
+      case '@':
+        templateData[key.substring(1)] = options[key];
+        break;
+      default:
+        break;
     }
   }
 
