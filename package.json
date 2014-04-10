@@ -1,6 +1,6 @@
 {
   "name": "scaffolt",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "Dead-simple JSON-based scaffolder.",
   "main": "index.js",
   "bin": {

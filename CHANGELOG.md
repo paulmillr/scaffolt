@@ -1,3 +1,7 @@
+# scaffolt 0.5.0 (10 April 2014)
+* Added support for named params {{$1}} etc.
+* Fixed windows path issues.
+
 # scaffolt 0.4.3 (13 October 2013)
 * Fixed typo.
 
