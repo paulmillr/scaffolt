@@ -18,14 +18,6 @@ var clone = function(object) {
   return cloned;
 }
 
-var replaceSlashes = function(string) {
-  if (sysPath.sep === '\\') {
-    return string.replace(/\//g, '\\');
-  } else {
-    return string;
-  }
-};
-
 // Async filter.
 var filter = function(list, predicate, callback) {
   each(list, function(item, next) {
@@ -130,7 +122,7 @@ exports.scaffoldFile = function(revert, from, base, method, templateData, parent
   templateData.pluralName = name ? inflection.pluralize(name) : templateData.pluralName
   templateData.parentPath = parentPath
 
-  var to = exports.formatTemplate(sysPath.join(parentPath, base), templateData);
+  var to = exports.formatTemplate(parentPath + '/' + base, templateData);
   if (revert && method !== 'append') {
     exports.destroyFile(to, callback);
   } else {
@@ -201,9 +193,9 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
   json.files = json.files.map(function(object) {
     return {
       method: object.method || defaultMethod,
-      base: sysPath.basename(replaceSlashes(object.to)),
-      from: join(replaceSlashes(object.from)),
-      parentPath: templateData.parentPath || sysPath.dirname(replaceSlashes(object.to))
+      base: sysPath.basename(object.to),
+      from: join(object.from),
+      parentPath: templateData.parentPath || sysPath.dirname(object.to)
     };
   });
 
