@@ -361,7 +361,7 @@ var scaffolt = module.exports = function(type, name, options, callback) {
   if (generatorsPath == null) generatorsPath = 'generators';
   if (revert == null) revert = false;
 
-  var templateData = {name: name, pluralName: pluralName, parentPath: parentPath};
+  var templateData = {name: name, pluralName: pluralName, parentPath: parentPath, type:type};
   for(var key in options){
     switch(key[0]) {
       case '$':
