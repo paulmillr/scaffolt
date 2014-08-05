@@ -119,6 +119,7 @@ exports.amendFile = function(path, contents, callback) {
 
 exports.scaffoldFile = function(revert, from, base, method, templateData, parentPath, name, callback) {
   // inject directly
+  templateData.name = name ? name : templateData.name
   templateData.pluralName = name ? inflection.pluralize(name) : templateData.pluralName
   templateData.parentPath = parentPath
 
@@ -234,7 +235,7 @@ exports.getDependencyTree = function(generators, type, memo, dep) {
   if (generator == null) {
     throw new Error("Invalid generator " + type);
   }
-  if (dep && dep.parentPath) {
+  if (dep) {
     generator.files.forEach(function(file) {
       if (dep.parentPath) file.parentPath = dep.parentPath;
       if (dep.name) file.name = dep.name;
