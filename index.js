@@ -16,7 +16,7 @@ var clone = function(object) {
     cloned[key] = clone(object[key]);
   });
   return cloned;
-}
+};
 
 // Async filter.
 var filter = function(list, predicate, callback) {
@@ -54,7 +54,7 @@ Handlebars.registerHelper('camelize', (function() {
 
 Handlebars.registerHelper('through', (function() {
   return function(options) {
-    return new Handlebars.SafeString("{{" + options.hash["value"] + "}}")
+    return new Handlebars.SafeString("{{" + options.hash["value"] + "}}");
   };
 })());
 
@@ -62,7 +62,7 @@ exports.loadHelpers = function(helpersPath) {
   var path = sysPath.resolve(helpersPath);
   var helpers = require(path);
   helpers(Handlebars);
-}
+};
 
 exports.generateFile = function(path, data, method, callback) {
   fs.exists(path, function(exists) {
@@ -119,8 +119,8 @@ exports.amendFile = function(path, contents, callback) {
 
 exports.scaffoldFile = function(revert, from, base, method, templateData, parentPath, name, callback) {
   // inject directly
-  templateData.pluralName = name ? inflection.pluralize(name) : templateData.pluralName
-  templateData.parentPath = parentPath
+  templateData.pluralName = name ? inflection.pluralize(name) : templateData.pluralName;
+  templateData.parentPath = parentPath;
 
   var to = exports.formatTemplate(parentPath + '/' + base, templateData);
   if (revert && method !== 'append') {
@@ -199,7 +199,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
     };
   });
 
-  if (templateData.parentPath) 
+  if (templateData.parentPath)
     json.parentPath = templateData.parentPath;
 
   json.dependencies = json.dependencies.map(function(object) {
@@ -210,7 +210,7 @@ exports.formatGeneratorConfig = function(path, json, templateData) {
 
     var dependencyTemplateData = clone(templateData);
     dependencyTemplateData.parentPath = json.parentPath;
-    
+
     if (object.parentPath && !json.parentPath) {
       logger.warn('generator "' + json.type + '" needs parentPath to function correctly with dependencies');
     }
@@ -347,6 +347,12 @@ var checkIfExists = function(generatorsPath, callback) {
   });
 };
 
+var isFile = function(path, callback) {
+  fs.stat(sysPath.resolve(path), function(error, stats) {
+    callback(error === null && stats.isFile());
+  });
+};
+
 var scaffolt = module.exports = function(type, name, options, callback) {
   // Set some default params.
   if (options == null) options = {};
@@ -376,6 +382,10 @@ var scaffolt = module.exports = function(type, name, options, callback) {
   }
 
   checkIfExists(generatorsPath, function(exists) {
+    var helpersPath = sysPath.join(generatorsPath, 'helpers.js');
+    isFile(helpersPath, function(isFile) {
+      if (isFile) exports.loadHelpers(helpersPath);
+    });
     exports.generateFiles(revert, generatorsPath, type, templateData, function(error) {
       if (error != null) {
         logger.error(error);
